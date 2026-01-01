@@ -160,14 +160,25 @@ TextEnvironment.prototype.renderToHTML = function (backend) {
                 this._html.putText(text);
                 break;
             case 'math':
-                if (typeof backend === 'undefined')
+                if (typeof backend === 'undefined') {
                     throw EvalError('No math backend found. Please setup KaTeX or MathJax.');
-                else if (backend.name === 'katex')
-                    this._html.putHTML(backend.driver.renderToString(text));
-                else if (backend.name === 'mathjax')
-                    this._html.putText(`$${text}$`);
-                else
+                }
+                else if (backend.name === 'katex') {
+                    var katexOptions = { displayMode: !!node.displayMode };
+                    this._html.putHTML(backend.driver.renderToString(text, katexOptions));
+                }
+                else if (backend.name === 'mathjax') {
+                    // For MathJax, use appropriate delimiters based on display mode
+                    if (node.displayMode)
+                        this._html.putText(`$$${text}$$`);
+
+                    else
+                        this._html.putText(`$${text}$`);
+
+                }
+                else {
                     throw new EvalError(`Unknown math backend ${backend}`);
+                }
                 break;
             case 'cond-symbol':
                 this._html
@@ -847,8 +858,8 @@ Renderer.prototype._buildTree = function (node) {
             break;
         case 'caption':
             this._newLine();
-//             this._typeKeyword(`${this._options.titlePrefix
-//             } ${Renderer.captionCount} `);
+            //             this._typeKeyword(`${this._options.titlePrefix
+            //             } ${Renderer.captionCount} `);
             this._typeKeyword(`${this._options.titlePrefix} `);
             textNode = node.children[0];
             this._buildTree(textNode);

@@ -122,12 +122,13 @@ ParseNode.prototype.addChild = function (childNode) {
 };
 
 /* AtomNode is the leaf node of parse tree */
-var AtomNode = function (type, value, whitespace) {
+var AtomNode = function (type, value, whitespace, displayMode) {
     // ParseNode.call(this, type, val);
     this.type = type;
     this.value = value;
     this.children = null; // leaf node, thus no children
     this.whitespace = !!whitespace; // is there any whitespace before the atom
+    this.displayMode = displayMode; // for math nodes: true = display mode, false = inline
 };
 AtomNode.prototype = ParseNode.prototype;
 
@@ -538,10 +539,12 @@ Parser.prototype._parseAtom = function () {
                                            acceptToken.tokenValues);
         if (tokenText === null) continue;
 
-        var anyWhitespace = this._lexer.get().whitespace;
+        var currentAtom = this._lexer.get();
+        var anyWhitespace = currentAtom.whitespace;
+        var displayMode = currentAtom.displayMode; // for math: true = display, false = inline
         if (atomType !== 'ordinary' && atomType !== 'math')
             tokenText = tokenText.toLowerCase();
-        return new AtomNode(atomType, tokenText, anyWhitespace);
+        return new AtomNode(atomType, tokenText, anyWhitespace, displayMode);
     }
     return null;
 };

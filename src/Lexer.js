@@ -54,9 +54,12 @@ Lexer.prototype.get = function () {
 */
 var mathPattern = {
     exec: function (str) {
+        // Order matters: $$ must come before $ to avoid partial matching
         var delimiters = [
-            { start: '$', end: '$' },
-            { start: '\\(', end: '\\)' },
+            { start: '$$', end: '$$', display: true },
+            { start: '$', end: '$', display: false },
+            { start: '\\[', end: '\\]', display: true },
+            { start: '\\(', end: '\\)', display: false },
         ];
         var totalLen = str.length;
 
@@ -83,7 +86,8 @@ var mathPattern = {
                 }
 
                 var res = [str.slice(0, endPos + pos + endDel.length),
-                    str.slice(startDel.length, endPos + pos)];
+                    str.slice(startDel.length, endPos + pos),
+                    delimiters[di].display]; // true for display math, false for inline
                 return res;
             }
         }
@@ -156,6 +160,7 @@ Lexer.prototype._next = function () {
             type: type, /* special, func, open, close, ordinary, math */
             text: usefulText, /* the text value of the atom */
             whitespace: anyWhitespace, /* any whitespace before the atom */
+            displayMode: type === 'math' ? !!match[2] : undefined, /* for math: true = display, false = inline */
         };
 
         this._pos += matchText.length;
