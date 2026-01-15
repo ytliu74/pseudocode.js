@@ -556,8 +556,9 @@ Renderer.prototype._newLine = function () {
         this._html.beginP('ps-line ps-code', this._globalTextStyle.toCSS());
 
         // We need to consider the indent width for linenumbers and scopelines
-        var extraIndentSize = this._options.lineNumber ? indentSize * 1.25 : 0;
-        extraIndentSize += this._options.scopeLines ? indentSize * 0.1 : 0;
+        // With scope lines: margin is halved (indentSize/2) but CSS adds padding (0.6em) + border (0.1em)
+        var baseIndent = this._options.scopeLines ? indentSize / 2 + 0.7 : indentSize;
+        var extraIndentSize = this._options.lineNumber ? baseIndent * 1.25 : 0;
 
         // We add this width if we need to pad the line (e.g., with linenumber).
         // We don't need to handle scope lines here, as they do not add any extra text in the line.
